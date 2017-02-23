@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>练习</title>
+		<script src="ajax.js"></script>
+		<script src="jquery.min.js"></script>
+	</head>
+	<style>
+		table{
+			width: 500px;
+			margin: 0 auto;
+			border: 1px solid #000;
+			border-collapse: collapse;
+			
+		}
+		tr,td{
+			height: 30px;
+			width: 20%;
+			text-align: center;
+			line-height: 30px;
+			border:1px solid #000000;
+		}
+		.add{
+			height: 30px;
+			line-height: 30px;
+			background: pink;
+			color: #fff;
+			margin: 0 auto;
+			width: 498px;
+			text-align: center;
+			border: 1px solid #000;
+			border-top:0px;
+			cursor: pointer;
+		}
+	</style>
+	<body>
+		<table>
+			<thead>
+				<tr>
+					<td>姓名</td>
+					<td>年龄</td>
+					<td>性别</td>
+					<td>学号</td>
+					<td>编辑</td>
+				</tr>
+			</thead>
+			<tbody></tbody>
+		</table>
+		<div class="add">+</div>
+	</body>
+	<script>
+		var tbody=document.querySelector("tbody");
+		window.onload=function(){
+			ajax({
+				url:"index.php",
+				dataType:"json",
+				success:function(e){
+					var str="";
+					for(var i=0;i<e.length;i++){
+						str+="<tr id="+e[i].id+">";
+						str+="<td attr='name'>"+e[i].name+"</td>";
+						str+="<td attr='age'>"+e[i].age+"</td>";
+						str+="<td attr='sex'>"+e[i].sex+"</td>";
+						str+="<td attr='num'>"+e[i].num+"</td>";
+						str+="<td><span class='shan'>删除</span>";
+						str+="</tr>";
+					}
+					tbody.innerHTML=str;
+				}
+			})
+		
+		
+		//添加
+        var add=document.querySelector(".add");
+		add.onclick=function(){
+			ajax({
+				url:"add.php",
+				success:function(e){
+					var tr=document.createElement("tr");
+					tr.setAttribute("id",e);
+					var str="";
+					str+="<td attr='name'></td>";
+					str+="<td attr='age'></td>";
+					str+="<td attr='sex'></td>";
+					str+="<td attr='num'></td>";
+					str+="<td><span class='shan'>删除</span>";
+					str+="</tr>";
+					tr.innerHTML=str;
+					tbody.append(tr);
+				}
+			})
+		}
+			
+		//删除
+		tbody.onclick=function(e){
+			var ev=e||window.event;
+			var obj=ev.srcElement||ev.target;
+//			console.log(obj)
+			if(obj.className=="shan"){
+//				alert(1);
+				var parent=obj.parentNode.parentNode;
+				var id=parent.id;
+				ajax({
+					url:"del.php",
+					data:{"id":id},
+					success:function(e){
+						if(e=="ok"){
+							tbody.removeChild(parent);
+						}
+					}	
+				})
+			}
+		}
+			
+			
+	    //编辑
+	    $("tbody").delegate("td:not(.shan)","dblclick",function(){
+	    	var that=$(this);
+	    	var oldv=$(this).text();
+	    	$(this).html("");
+	    	var input=$("<input type='text' value='"+oldv+"'>").appendTo($(this));
+			input.text(oldv);
+	    	input.focus();
+	    	input.blur(function(){
+	    		var newv=$(this).val();
+	    		if(oldv==newv){
+	    			input.value=oldv;
+	    			$(this).remove();
+	    			that.html(newv);		
+	    		}else{
+	    			that.html(newv);
+	    			var id=that.parent().attr("id");
+	    			var attr=that.attr("attr");
+	    			$.ajax({
+	    				url:"edit.php",
+	    				data:{id:id,value:newv,attr:attr},
+	    				success:function(e){
+	    					if(e=="ok"){
+	    						input.remove();
+//	    						that.html();
+	    					}
+	    				}
+	    			})
+	    		}
+
+	    	})
+	    })
+	
+		}
+		
+		
+		
+		
+		
+		
+		
+		
+	</script>
+</html>
